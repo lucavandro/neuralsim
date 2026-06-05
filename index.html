@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Rete Neurale Interattiva</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="app">
+  <header>
+    <div class="header-left">
+      <h1>Rete Neurale <span>Interattiva</span></h1>
+      <nav id="tabs">
+        <button class="tab-btn active" data-tab="rete">Rete</button>
+        <button class="tab-btn" data-tab="training-data">Dati Training</button>
+      </nav>
+    </div>
+    <div id="header-status">Pronto</div>
+  </header>
+  <main>
+    <div id="tab-rete" class="tab-content active">
+      <div id="canvas-container"><canvas id="network-canvas"></canvas><div id="canvas-hint">Clicca su una connessione o su un neurone hidden/output per modificarne peso / bias</div></div>
+      <div id="control-panel">
+        <div class="panel-section">
+          <h3>Input</h3>
+          <div class="input-row"><label>Altezza</label><input type="number" id="input-height" value="175" min="100" max="220" step="1"><span class="unit">cm</span><span class="norm" id="norm-height">0.88</span></div>
+          <div class="input-row"><label>Peso</label><input type="number" id="input-weight" value="70" min="30" max="200" step="0.5"><span class="unit">kg</span><span class="norm" id="norm-weight">0.47</span></div>
+        </div>
+        <div class="panel-section">
+          <h3>Controlli</h3>
+          <div class="btn-row"><button class="btn btn-play" id="btn-play">&#9654; Play</button><button class="btn btn-load" id="btn-load">&#128194; Carica JSON</button></div>
+          <div class="btn-row" style="margin-top:8px"><button class="btn btn-train" id="btn-train">&#9889; Train</button><button class="btn btn-download" id="btn-download">&#11015; Download</button></div>
+          <input type="file" id="file-input" accept=".json" style="display:none">
+        </div>
+        <div class="panel-section">
+          <h3>Velocit&agrave;</h3>
+          <div class="speed-row">
+            <label>0.25</label>
+            <input type="range" id="speed-slider" min="0.25" max="3" step="0.05" value="1">
+            <label class="speed-val" id="speed-display">1x</label>
+          </div>
+        </div>
+        <div class="panel-section">
+          <h3>Risultato</h3>
+          <div id="result-box" class="waiting">In attesa...</div>
+        </div>
+        <div class="panel-section">
+          <h3>Uscita Rete</h3>
+          <div id="output-display"><div class="value" id="output-value">---</div><div class="label">Valore Neurone Output</div></div>
+        </div>
+        <div class="panel-section" id="weight-editor">
+          <h3>Modifica Peso</h3>
+          <div class="conn-label" id="weight-conn-label">---</div>
+          <div class="edit-row"><input type="number" id="weight-input" step="0.1"><button class="save-btn" id="weight-save">Salva</button></div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-training-data" class="tab-content">
+      <div class="td-container">
+        <div class="td-section">
+          <h3>Formula BMI</h3>
+          <div class="td-formula">
+            <span class="formula">BMI = <sup>peso (kg)</sup> &frasl; <sub>altezza<sup>2</sup> (m<sup>2</sup>)</sub></span>
+          </div>
+          <p class="td-desc">Il <strong>Body Mass Index (BMI)</strong> &egrave; un indice che mette in relazione peso e altezza. Nel nostro problema sintetico:</p>
+          <div class="td-discrimine">
+            <span class="disc-yes">18.5 &le; BMI &le; 25 &rarr; In forma (label = 1)</span>
+            <span class="disc-no">BMI &lt; 18.5 oppure BMI &gt; 25 &rarr; Non in forma (label = 0)</span>
+          </div>
+        </div>
+        <div class="td-section">
+          <h3>Esempi di dati di training</h3>
+          <div class="td-table-wrap">
+            <table class="td-table">
+              <thead><tr><th>Peso (kg)</th><th>Altezza (m)</th><th>Label</th></tr></thead>
+              <tbody id="td-table-body"></tbody>
+            </table>
+          </div>
+        </div>
+        <div class="td-section">
+          <h3>Statistiche (400 campioni)</h3>
+          <div class="td-stats">
+            <div class="stat-row"><span class="stat-label">Totale esempi:</span><span class="stat-val" id="td-total">0</span></div>
+            <div class="stat-row"><span class="stat-label">In forma (18.5 &le; BMI &le; 25):</span><span class="stat-val td-green" id="td-in-forma">0</span></div>
+            <div class="stat-row"><span class="stat-label">Non in forma (BMI &lt; 18.5 o &gt; 25):</span><span class="stat-val td-red" id="td-non-forma">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
