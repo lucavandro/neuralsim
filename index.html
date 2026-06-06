@@ -14,6 +14,7 @@
       <nav id="tabs">
         <button class="tab-btn active" data-tab="rete">Rete</button>
         <button class="tab-btn" data-tab="training-data">Dati Training</button>
+        <button class="tab-btn" data-tab="matrix-training">Training Matrix</button>
       </nav>
     </div>
     <div id="header-status">Pronto</div>
@@ -84,6 +85,40 @@
             <div class="stat-row"><span class="stat-label">Totale esempi:</span><span class="stat-val" id="td-total">0</span></div>
             <div class="stat-row"><span class="stat-label">In forma (18.5 &le; BMI &le; 25):</span><span class="stat-val td-green" id="td-in-forma">0</span></div>
             <div class="stat-row"><span class="stat-label">Non in forma (BMI &lt; 18.5 o &gt; 25):</span><span class="stat-val td-red" id="td-non-forma">0</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-matrix-training" class="tab-content">
+      <div class="mt-container">
+        <div class="mt-header">
+          <div class="mt-controls">
+            <button class="btn btn-play" id="mt-play">▶ Start</button>
+            <div class="mt-speed">
+              <label>Ritardo: <span id="mt-delay-label">200</span>ms</label>
+              <input type="range" id="mt-delay" min="50" max="2000" step="50" value="200">
+            </div>
+          </div>
+          <div class="mt-info">
+            Epoca: <span id="mt-epoch">0</span> &nbsp;|&nbsp; Loss: <span id="mt-loss">---</span> &nbsp;|&nbsp; Accuracy: <span id="mt-acc">---</span>
+          </div>
+        </div>
+        <div class="mt-matrices">
+          <div class="mt-matrix-group">
+            <h3>W₁</h3>
+            <div class="mt-matrix" id="mt-W1"><table></table></div>
+          </div>
+          <div class="mt-matrix-group">
+            <h3>b₁</h3>
+            <div class="mt-matrix" id="mt-b1"><table></table></div>
+          </div>
+          <div class="mt-matrix-group">
+            <h3>W₂</h3>
+            <div class="mt-matrix" id="mt-W2"><table></table></div>
+          </div>
+          <div class="mt-matrix-group">
+            <h3>b₂</h3>
+            <div class="mt-matrix" id="mt-b2"><table></table></div>
           </div>
         </div>
       </div>

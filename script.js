@@ -655,7 +655,7 @@ function train() {
       var ah1 = sigmoid(zh1);
       var ah2 = sigmoid(zh2);
 
-      var zo  = ah0 * W2[0] + ah1 * W2[1] + ah2 * W2[2] + b2;
+    var zo  = ah0 * W2[0] + ah1 * W2[1] + ah2 * W2[2] + mtb2;
       var ao  = sigmoid(zo);
       var dz  = ao - d.y; // dL/dz_o
 
@@ -1088,6 +1088,12 @@ function switchTab(name) {
     aph = 5;
     document.getElementById("btn-play").disabled = false;
   }
+  // Ferma matrix training
+  if (mtRunning) {
+    mtRunning = false;
+    if (mtTimeoutId) { clearTimeout(mtTimeoutId); mtTimeoutId = null; }
+    document.getElementById("mt-play").textContent = "\u25B6 Start";
+  }
 
   document.querySelectorAll(".tab-btn").forEach(function(b) {
     b.classList.toggle("active", b.dataset.tab === name);
@@ -1096,6 +1102,7 @@ function switchTab(name) {
     c.classList.toggle("active", c.id === "tab-" + name);
   });
   if (name === "rete") resize();
+  if (name === "matrix-training") mtReset();
 }
 
 document.querySelectorAll(".tab-btn").forEach(function(btn) {
@@ -1133,6 +1140,176 @@ function populateTrainingData() {
   document.getElementById("td-non-forma").textContent =
     nonFormaCount + " (" + (nonFormaCount / data.length * 100).toFixed(1) + "%)";
 }
+
+// --- Matrix Training Tab ----------------------------------------------------
+
+var mtData = null;
+var mtNormData = null;
+var mtRunning = false;
+var mtEpoch = 0;
+var mtMaxEpoch = 50000;
+var mtLR = 1;
+var mtDelay = 200;
+var mtTimeoutId = null;
+var mtW1 = [[0,0,0],[0,0,0]];
+var mtb1 = [0,0,0];
+var mtW2 = [0,0,0];
+var mtb2 = 0;
+
+function mtReset() {
+  if (mtTimeoutId) { clearTimeout(mtTimeoutId); mtTimeoutId = null; }
+  mtRunning = false;
+  mtEpoch = 0;
+  document.getElementById("mt-play").textContent = "\u25B6 Start";
+  for (var i = 0; i < 2; i++) {
+    for (var j = 0; j < 3; j++) {
+      var w = weights.find(function(x) {
+        return x.from[0] === L_IN && x.from[1] === i && x.to[0] === L_HID && x.to[1] === j;
+      });
+      mtW1[i][j] = w ? w.w : 0;
+    }
+  }
+  for (var j = 0; j < 3; j++) {
+    var w = weights.find(function(x) {
+      return x.from[0] === L_HID && x.from[1] === j && x.to[0] === L_OUT && x.to[1] === 0;
+    });
+    mtW2[j] = w ? w.w : 0;
+  }
+  mtb1 = [biases.hidden[0], biases.hidden[1], biases.hidden[2]];
+  mtb2 = biases.output;
+  mtData = generateData(400);
+  mtNormData = mtData.map(function(d) {
+    return {
+      x: [Math.max(0, Math.min(1, d.h / 200)), Math.max(0, Math.min(1, d.w / 150))],
+      y: d.label
+    };
+  });
+  mtUpdateInfo();
+  mtRenderMatrices();
+}
+
+function mtStepEpoch() {
+  var n = mtNormData.length;
+  var W1 = mtW1, W2 = mtW2, b1 = mtb1;
+  var dW1 = [[0,0,0],[0,0,0]];
+  var db1 = [0,0,0];
+  var dW2 = [0,0,0];
+  var db2 = 0;
+  for (var k = 0; k < n; k++) {
+    var d = mtNormData[k];
+    var x0 = d.x[0], x1 = d.x[1];
+    var zh0 = x0 * W1[0][0] + x1 * W1[1][0] + b1[0];
+    var zh1 = x0 * W1[0][1] + x1 * W1[1][1] + b1[1];
+    var zh2 = x0 * W1[0][2] + x1 * W1[1][2] + b1[2];
+    var ah0 = sigmoid(zh0), ah1 = sigmoid(zh1), ah2 = sigmoid(zh2);
+    var zo  = ah0 * W2[0] + ah1 * W2[1] + ah2 * W2[2] + mtb2;
+    var ao  = sigmoid(zo);
+    var dz  = ao - d.y;
+    dW2[0] += dz * ah0; dW2[1] += dz * ah1; dW2[2] += dz * ah2; db2 += dz;
+    var dz_h0 = dz * W2[0] * ah0 * (1 - ah0);
+    var dz_h1 = dz * W2[1] * ah1 * (1 - ah1);
+    var dz_h2 = dz * W2[2] * ah2 * (1 - ah2);
+    dW1[0][0] += dz_h0 * x0; dW1[0][1] += dz_h1 * x0; dW1[0][2] += dz_h2 * x0;
+    dW1[1][0] += dz_h0 * x1; dW1[1][1] += dz_h1 * x1; dW1[1][2] += dz_h2 * x1;
+    db1[0] += dz_h0; db1[1] += dz_h1; db1[2] += dz_h2;
+  }
+  for (var i = 0; i < 2; i++) {
+    for (var j = 0; j < 3; j++) { W1[i][j] -= mtLR * dW1[i][j] / n; }
+  }
+  for (var j = 0; j < 3; j++) { b1[j] -= mtLR * db1[j] / n; W2[j] -= mtLR * dW2[j] / n; }
+  mtb2 -= mtLR * db2 / n;
+  mtEpoch++;
+}
+
+function mtComputeLossAcc() {
+  var n = mtNormData.length;
+  var W1 = mtW1, W2 = mtW2, b1 = mtb1, b2 = mtb2;
+  var loss = 0, correct = 0;
+  for (var k = 0; k < n; k++) {
+    var d = mtNormData[k];
+    var x0 = d.x[0], x1 = d.x[1], y = d.y;
+    var zh0 = x0 * W1[0][0] + x1 * W1[1][0] + b1[0];
+    var zh1 = x0 * W1[0][1] + x1 * W1[1][1] + b1[1];
+    var zh2 = x0 * W1[0][2] + x1 * W1[1][2] + b1[2];
+    var ah0 = sigmoid(zh0), ah1 = sigmoid(zh1), ah2 = sigmoid(zh2);
+    var zo  = ah0 * W2[0] + ah1 * W2[1] + ah2 * W2[2] + b2;
+    var ao  = sigmoid(zo);
+    loss += -y * Math.log(ao + 1e-15) - (1 - y) * Math.log(1 - ao + 1e-15);
+    if ((ao > 0.5 ? 1 : 0) === y) correct++;
+  }
+  return { loss: loss / n, acc: correct / n };
+}
+
+function mtUpdateInfo() {
+  var res = mtEpoch > 0 ? mtComputeLossAcc() : { loss: 0, acc: 0 };
+  document.getElementById("mt-epoch").textContent = mtEpoch;
+  document.getElementById("mt-loss").textContent = mtEpoch > 0 ? res.loss.toFixed(4) : "---";
+  document.getElementById("mt-acc").textContent = mtEpoch > 0 ? (res.acc * 100).toFixed(1) + "%" : "---";
+  return mtEpoch > 0 ? res : null;
+}
+
+function mtRenderMatrices() {
+  renderMatrixTable("mt-W1", mtW1, [2, 3]);
+  renderMatrixTable("mt-b1", [mtb1], [1, 3]);
+  renderMatrixTable("mt-W2", mtW2.map(function(v) { return [v]; }), [3, 1]);
+  renderMatrixTable("mt-b2", [[mtb2]], [1, 1]);
+}
+
+function renderMatrixTable(containerId, matrix, dims) {
+  var container = document.getElementById(containerId);
+  var table = container.querySelector("table") || document.createElement("table");
+  container.innerHTML = "";
+  container.appendChild(table);
+  table.innerHTML = "";
+  for (var r = 0; r < dims[0]; r++) {
+    var tr = document.createElement("tr");
+    for (var c = 0; c < dims[1]; c++) {
+      var td = document.createElement("td");
+      var val = matrix[r][c];
+      td.textContent = val !== undefined ? val.toFixed(4) : "---";
+      if (val > 0.01) td.className = "highlight";
+      else if (val < -0.01) td.className = "neg-highlight";
+      tr.appendChild(td);
+    }
+    table.appendChild(tr);
+  }
+}
+
+function mtLoop() {
+  if (!mtRunning) return;
+  mtStepEpoch();
+  var res = mtUpdateInfo();
+  mtRenderMatrices();
+  if (res && res.acc >= 0.95) {
+    mtRunning = false;
+    document.getElementById("mt-play").textContent = "\u25B6 Start";
+    return;
+  }
+  if (mtEpoch >= mtMaxEpoch) {
+    mtRunning = false;
+    document.getElementById("mt-play").textContent = "\u25B6 Start";
+    return;
+  }
+  mtTimeoutId = setTimeout(mtLoop, mtDelay);
+}
+
+document.getElementById("mt-play").addEventListener("click", function() {
+  if (mtRunning) {
+    mtRunning = false;
+    if (mtTimeoutId) { clearTimeout(mtTimeoutId); mtTimeoutId = null; }
+    this.textContent = "\u25B6 Start";
+  } else {
+    if (mtEpoch === 0) mtReset();
+    mtRunning = true;
+    this.textContent = "\u23F8 Pause";
+    mtLoop();
+  }
+});
+
+document.getElementById("mt-delay").addEventListener("input", function() {
+  mtDelay = +this.value;
+  document.getElementById("mt-delay-label").textContent = mtDelay;
+});
 
 // --- Inizializzazione -------------------------------------------------------
 
