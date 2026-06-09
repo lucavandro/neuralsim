@@ -3,12 +3,7 @@
   import NetworkCanvas from '$lib/components/NetworkCanvas.svelte';
   import ControlPanel from '$lib/components/ControlPanel.svelte';
 
-  $effect(() => {
-    if (!anim.running && anim.phase >= 6) {
-      document.getElementById("header-status").className = "done";
-      document.getElementById("header-status").textContent = anim.result ? "In forma" : "Non in forma";
-    }
-  });
+  
 </script>
 
 <div id="tab-rete">

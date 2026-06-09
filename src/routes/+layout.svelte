@@ -48,10 +48,6 @@
   .header-left { display: flex; align-items: center; gap: 32px; }
   header h1 { font-size: 20px; font-weight: 600; color: #e94560; }
   header h1 span { color: #a0a0c0; font-weight: 300; }
-  :global(#header-status) { font-size: 14px; padding: 6px 16px; border-radius: 20px; background: #1a1a2e; color: #888; transition: all .4s; }
-  :global(#header-status.ready) { color: #4fc3f7; border-left: 3px solid #4fc3f7; }
-  :global(#header-status.running) { color: #ffd54f; border-left: 3px solid #ffd54f; }
-  :global(#header-status.done) { color: #81c784; border-left: 3px solid #81c784; }
   :global(#tabs) { display: flex; gap: 4px; }
   .tab-btn { padding: 6px 18px; border: none; border-radius: 6px; background: transparent; color: #666688; font-size: 13px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .2s; text-decoration: none; }
   .tab-btn:hover { color: #a0a0c0; background: rgba(255, 255, 255, 0.05); }
@@ -61,7 +57,6 @@
     header { flex-wrap: wrap; gap: 8px; padding: 10px 16px; }
     header h1 { font-size: 17px; }
     .header-left { gap: 16px; flex-wrap: wrap; }
-    :global(#header-status) { font-size: 12px; padding: 4px 12px; }
     .tab-btn { font-size: 12px; padding: 5px 12px; }
   }
   @media (max-width: 640px) {
@@ -73,6 +68,6 @@
     .header-left { gap: 10px; }
     :global(#tabs) { gap: 2px; overflow-x: auto; -webkit-overflow-scrolling: touch; }
     .tab-btn { font-size: 11px; padding: 4px 10px; white-space: nowrap; }
-    :global(#header-status) { font-size: 11px; padding: 3px 10px; }
+   
   }
 </style>

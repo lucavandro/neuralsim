@@ -18,8 +18,6 @@
 
   $effect(() => {
     if (!anim.running && anim.phase < 6) {
-      document.getElementById("header-status").textContent = "Pronto";
-      document.getElementById("header-status").className = "ready";
       document.getElementById("btn-play").disabled = false;
     }
   });
@@ -28,8 +26,6 @@
     var h = +hInput || 175, w = +wInput || 70;
     fwd(h, w);
     anim.result = (net.ov > 0.5);
-    document.getElementById("header-status").textContent = "In esecuzione...";
-    document.getElementById("header-status").className = "running";
     anim.running = true;
   }
 
@@ -37,19 +33,11 @@
     if (anim.running) return;
     var btn = document.getElementById("btn-train");
     btn.disabled = true;
-    document.getElementById("header-status").textContent = "Training...";
-    document.getElementById("header-status").className = "running";
     setTimeout(function() {
       var result = train();
       btn.disabled = false;
       saveWeights();
-      if (result.ok) {
-        document.getElementById("header-status").textContent = "OK " + result.epochs + "ep " + (result.acc * 100).toFixed(1) + "%";
-        document.getElementById("header-status").className = "done";
-      } else {
-        document.getElementById("header-status").textContent = "Migliore: " + (result.acc * 100).toFixed(1) + "% (soglia 95%)";
-        document.getElementById("header-status").className = "ready";
-      }
+      
       var h = +hInput || 175, w = +wInput || 70;
       fwd(h, w);
       anim.phase = 0;
@@ -70,9 +58,7 @@
         var h = +hInput || 175, w = +wInput || 70;
         fwd(h, w);
         anim.phase = 0;
-        document.getElementById("header-status").textContent = "Pesi caricati";
-        document.getElementById("header-status").className = "ready";
-      } catch(err) { alert("Errore: " + err.message); }
+           } catch(err) { alert("Errore: " + err.message); }
     };
     reader.readAsText(file);
     e.target.value = "";
