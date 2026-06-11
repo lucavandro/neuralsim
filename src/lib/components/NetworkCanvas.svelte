@@ -1,6 +1,7 @@
 <script>
   import { net, anim, speedConfig, selection, L_IN, L_HID, L_OUT, LABELS } from '$lib/network.svelte.js';
   import { onDestroy } from 'svelte';
+  import { currentTheme } from '$lib/theme.svelte.js';
 
   let canvas;
   let ctx;
@@ -8,6 +9,16 @@
   const R = 24;
   const BASE_DUR = [0, 400, 700, 400, 700, 400, 1200];
   let animFrameId = 0;
+  let zoom = $state(1);
+  let panX = $state(0);
+  let panY = $state(0);
+  let isPanning = $state(false);
+  let panStartX = $state(0);
+  let panStartY = $state(0);
+  let panStartPanX = $state(0);
+  let panStartPanY = $state(0);
+  const ZOOM_MIN = 0.3;
+  const ZOOM_MAX = 5;
 
   let { } = $props();
 
@@ -20,6 +31,38 @@
   }
   function weightColor(w) { return w > 0 ? { r: 66, g: 165, b: 245 } : { r: 239, g: 68, b: 68 }; }
   function rgba(r, g, b, a) { return "rgba(" + r + "," + g + "," + b + "," + a + ")"; }
+
+  function getCSSCustomProp(name, fallback) {
+    if (typeof document === 'undefined') return fallback;
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
+  }
+
+  function canvasColors() {
+    var isLight = document.documentElement.dataset.theme === 'light';
+    return {
+      bg: isLight ? '#fafafa' : '#1a1a2e',
+      inactiveFill: isLight ? '#f0f0f4' : '#2a2a3e',
+      inactiveStroke: isLight ? '#d0d0dc' : '#3a3a5e',
+      text: isLight ? '#444466' : '#aaaacc',
+      label: isLight ? '#8888aa' : '#666688',
+      layerLabel: isLight ? '#bbbbbb' : '#444466',
+      connR: isLight ? 180 : 60,
+      connG: isLight ? 180 : 60,
+      connB: isLight ? 200 : 90,
+      weightR: isLight ? 100 : 150,
+      weightG: isLight ? 100 : 150,
+      weightB: isLight ? 130 : 180,
+      weightA: isLight ? 0.6 : 0.7,
+      biasR: isLight ? 100 : 100,
+      biasG: isLight ? 100 : 100,
+      biasB: isLight ? 135 : 135,
+      biasA: isLight ? 0.4 : 0.6,
+      labelText: isLight ? '#aaa' : '#555577',
+      activeText: isLight ? '#1a1a2e' : '#ffffff',
+      hintBg: isLight ? 'rgba(245,245,250,0.9)' : 'rgba(26,26,46,0.85)',
+      hintText: isLight ? '#999' : '#444466',
+    };
+  }
   function edgePoint(x1, y1, x2, y2, r) {
     var dx = x2 - x1, dy = y2 - y1, d = Math.sqrt(dx * dx + dy * dy) || 1;
     return { x: x1 + (dx / d) * r, y: y1 + (dy / d) * r };
@@ -32,9 +75,15 @@
 
   function draw() {
     if (!ctx) return;
+    var cc = canvasColors();
     ctx.clearRect(0, 0, W, H);
-    ctx.fillStyle = "#1a1a2e";
+    ctx.fillStyle = cc.bg;
     ctx.fillRect(0, 0, W, H);
+
+    ctx.save();
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(zoom, zoom);
+    ctx.translate(-W / 2 + panX, -H / 2 + panY);
 
     var layers = ly;
     var conns = net.weights;
@@ -60,20 +109,20 @@
         var mx = fr.x + (to.x - fr.x) * signal;
         var my = fr.y + (to.y - fr.y) * signal;
         ctx.beginPath(); ctx.moveTo(mx, my); ctx.lineTo(et.x, et.y);
-        ctx.strokeStyle = rgba(60, 60, 90, baseAlpha * 0.5); ctx.lineWidth = 1.5; ctx.stroke();
+        ctx.strokeStyle = rgba(cc.connR, cc.connG, cc.connB, baseAlpha * 0.5); ctx.lineWidth = 1.5; ctx.stroke();
         ctx.beginPath(); ctx.moveTo(ef.x, ef.y); ctx.lineTo(mx, my);
         ctx.strokeStyle = rgba(col.r, col.g, col.b, 0.9); ctx.lineWidth = 2.5; ctx.stroke();
         drawArrowhead(et.x, et.y, angle, 8, col, baseAlpha * 0.4);
       } else {
         var active = (signal >= 1);
         ctx.beginPath(); ctx.moveTo(ef.x, ef.y); ctx.lineTo(et.x, et.y);
-        ctx.strokeStyle = active ? rgba(col.r, col.g, col.b, 0.85) : rgba(60, 60, 90, baseAlpha * 0.5);
+        ctx.strokeStyle = active ? rgba(col.r, col.g, col.b, 0.85) : rgba(cc.connR, cc.connG, cc.connB, baseAlpha * 0.5);
         ctx.lineWidth = active ? 2.5 : 1.5; ctx.stroke();
         drawArrowhead(et.x, et.y, angle, 8, col, active ? 0.9 : baseAlpha * 0.4);
       }
       ctx.save();
       ctx.font = "11px Consolas, monospace"; ctx.textAlign = "center"; ctx.textBaseline = "middle";
-      ctx.fillStyle = rgba(150, 150, 180, 0.7);
+      ctx.fillStyle = rgba(cc.weightR, cc.weightG, cc.weightB, cc.weightA);
       ctx.fillText(c.w.toFixed(2), (fr.x + to.x) / 2, (fr.y + to.y) / 2 - 12);
       ctx.restore();
     }
@@ -100,14 +149,14 @@
           g2.addColorStop(0, "hsl(" + hue + "," + (l === L_OUT ? "90%,75%" : "80%,70%") + ")");
           g2.addColorStop(1, "hsl(" + hue + "," + (l === L_OUT ? "80%,45%" : "70%,40%") + ")");
           ctx.fillStyle = g2;
-        } else ctx.fillStyle = "#2a2a3e";
+        } else ctx.fillStyle = cc.inactiveFill;
         ctx.fill();
-        ctx.strokeStyle = active ? "hsla(" + hue + ",80%,60%,0.8)" : "#3a3a5e";
+        ctx.strokeStyle = active ? "hsla(" + hue + ",80%,60%,0.8)" : cc.inactiveStroke;
         ctx.lineWidth = 2; ctx.stroke();
         ctx.save();
         ctx.font = active ? "bold 13px Segoe UI, sans-serif" : "11px Segoe UI, sans-serif";
         ctx.textAlign = "center"; ctx.textBaseline = "middle";
-        ctx.fillStyle = active ? "#fff" : "#666688";
+        ctx.fillStyle = active ? cc.activeText : cc.label;
         ctx.fillText(active ? actVal.toFixed(2) : LABELS[l][n], p.x, active ? p.y - 3 : p.y);
         ctx.restore();
 
@@ -117,18 +166,18 @@
           var bx = p.x, by = p.y - 55;
           var bee = edgePoint(p.x, p.y, bx, by, R);
           ctx.beginPath(); ctx.moveTo(bx, by); ctx.lineTo(bee.x, bee.y);
-          ctx.strokeStyle = active ? rgba(bc.r, bc.g, bc.b, 0.85) : rgba(60, 60, 90, ba * 0.5);
+          ctx.strokeStyle = active ? rgba(bc.r, bc.g, bc.b, 0.85) : rgba(cc.connR, cc.connG, cc.connB, ba * 0.5);
           ctx.lineWidth = active ? 3 : 1.5; ctx.stroke();
           drawArrowhead(bee.x, bee.y, Math.atan2(p.y - by, p.x - bx), 8, bc, active ? 0.9 : ba * 0.4);
           ctx.save();
           ctx.font = "bold 12px Consolas, monospace"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-          ctx.fillStyle = active ? rgba(bc.r, bc.g, bc.b, 0.9) : rgba(100, 100, 135, 0.6);
+          ctx.fillStyle = active ? rgba(bc.r, bc.g, bc.b, 0.9) : rgba(cc.biasR, cc.biasG, cc.biasB, cc.biasA);
           ctx.fillText(bv.toFixed(2), bx, by - 4);
           ctx.restore();
         }
         ctx.save();
         ctx.font = "11px Segoe UI, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "top";
-        ctx.fillStyle = active ? "#aaaacc" : "#555577";
+        ctx.fillStyle = active ? cc.text : cc.labelText;
         ctx.fillText(LABELS[l][n], p.x, p.y + R + 6);
         ctx.restore();
       }
@@ -137,7 +186,7 @@
     var ln = ["INPUT", "HIDDEN", "OUTPUT"], lx = [layers[0][0].x, layers[1][0].x, layers[2][0].x];
     for (var li = 0; li < 3; li++) {
       ctx.save(); ctx.font = "9px Segoe UI, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
-      ctx.fillStyle = "#444466"; ctx.fillText(ln[li], lx[li], H - 12); ctx.restore();
+      ctx.fillStyle = cc.layerLabel; ctx.fillText(ln[li], lx[li], H - 12); ctx.restore();
     }
     if (showResult) {
       ctx.save(); ctx.font = "bold 20px Segoe UI, sans-serif"; ctx.textAlign = "center"; ctx.textBaseline = "bottom";
@@ -145,6 +194,7 @@
       ctx.fillText(anim.result ? "IN FORMA" : "NON IN FORMA", layers[2][0].x, layers[2][0].y - R - 40);
       ctx.restore();
     }
+    ctx.restore();
   }
 
   function resize() {
@@ -174,10 +224,18 @@
     else { anim.running = false; anim.phase = 5; }
   }
 
+  function screenToCanvas(sx, sy) {
+    return {
+      x: (sx - W / 2) / zoom + W / 2 - panX,
+      y: (sy - H / 2) / zoom + H / 2 - panY
+    };
+  }
+
   function onClick(e) {
     if (anim.running) return;
     var rect = canvas.getBoundingClientRect();
-    var mx = e.clientX - rect.x, my = e.clientY - rect.y;
+    var p = screenToCanvas(e.clientX - rect.x, e.clientY - rect.y);
+    var mx = p.x, my = p.y;
 
     for (var l = 1; l <= 2; l++) {
       for (var n = 0; n < ly[l].length; n++) {
@@ -214,6 +272,65 @@
     draw();
   }
 
+  function onWheel(e) {
+    e.preventDefault();
+    var rect = canvas.getBoundingClientRect();
+    var mx = e.clientX - rect.x, my = e.clientY - rect.y;
+    var oldZoom = zoom;
+    var newZoom = Math.max(ZOOM_MIN, Math.min(ZOOM_MAX, zoom - e.deltaY * 0.001));
+    if (newZoom === oldZoom) return;
+    panX = (mx - W / 2) / newZoom - (mx - W / 2) / oldZoom + panX;
+    panY = (my - H / 2) / newZoom - (my - H / 2) / oldZoom + panY;
+    zoom = newZoom;
+    draw();
+  }
+
+  function onMouseDown(e) {
+    if (anim.running) return;
+    isPanning = true;
+    panStartX = e.clientX;
+    panStartY = e.clientY;
+    panStartPanX = panX;
+    panStartPanY = panY;
+  }
+
+  function onMouseMove(e) {
+    if (isPanning) {
+      panX = panStartPanX + (e.clientX - panStartX) / zoom;
+      panY = panStartPanY + (e.clientY - panStartY) / zoom;
+      draw();
+    }
+  }
+
+  function onMouseUp() {
+    isPanning = false;
+  }
+
+  function zoomIn() {
+    var oldZoom = zoom;
+    var newZoom = Math.min(ZOOM_MAX, zoom * 1.3);
+    panX = (W / 2) / newZoom - (W / 2) / oldZoom + panX;
+    panY = (H / 2) / newZoom - (H / 2) / oldZoom + panY;
+    zoom = newZoom;
+    draw();
+  }
+
+  function zoomOut() {
+    var oldZoom = zoom;
+    var newZoom = Math.max(ZOOM_MIN, zoom / 1.3);
+    panX = (W / 2) / newZoom - (W / 2) / oldZoom + panX;
+    panY = (H / 2) / newZoom - (H / 2) / oldZoom + panY;
+    zoom = newZoom;
+    draw();
+  }
+
+  function resetZoom() {
+    zoom = 1;
+    panX = 0;
+    panY = 0;
+    draw();
+  }
+
   $effect(() => {
     if (canvas && !ctx) {
       ctx = canvas.getContext("2d");
@@ -243,6 +360,11 @@
     }
   });
 
+  $effect(() => {
+    $currentTheme; zoom; panX; panY;
+    if (ctx && !anim.running) draw();
+  });
+
   onDestroy(() => {
     if (animFrameId) cancelAnimationFrame(animFrameId);
     anim.running = false;
@@ -250,12 +372,32 @@
 </script>
 
 <div id="canvas-container">
-  <canvas bind:this={canvas} onclick={onClick} id="network-canvas"></canvas>
+  <canvas bind:this={canvas} id="network-canvas"
+    onclick={onClick}
+    onwheel={onWheel}
+    onmousedown={onMouseDown}
+    onmousemove={onMouseMove}
+    onmouseup={onMouseUp}
+    onmouseleave={onMouseUp}
+    class:panning={isPanning}
+  ></canvas>
+  <div id="canvas-controls">
+    <button class="zoom-btn" onclick={zoomIn} title="Ingrandisci">+</button>
+    <button class="zoom-btn" onclick={zoomOut} title="Rimpicciolisci">&minus;</button>
+    <button class="zoom-btn" onclick={resetZoom} title="Reimposta zoom" class:active={zoom !== 1 || panX !== 0 || panY !== 0}>&#8634;</button>
+  </div>
+  <div id="zoom-level">{zoom.toFixed(1)}x</div>
   <div id="canvas-hint">Clicca su una connessione o su un neurone hidden/output per modificarne peso / bias</div>
 </div>
 
 <style>
-  #canvas-container { flex: 1; position: relative; background: #1a1a2e; min-width: 0; overflow: hidden; }
-  #network-canvas { width: 100%; height: 100%; display: block; cursor: pointer; }
-  #canvas-hint { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); font-size: 12px; color: #444466; background: rgba(26,26,46,0.85); padding: 6px 14px; border-radius: 12px; pointer-events: none; white-space: nowrap; z-index: 1; }
+  #canvas-container { flex: 1; position: relative; background: var(--canvas-bg); min-width: 0; overflow: hidden; }
+  #network-canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+  #network-canvas.panning { cursor: grabbing; }
+  #canvas-controls { position: absolute; top: 12px; right: 12px; display: flex; flex-direction: column; gap: 4px; z-index: 2; }
+  .zoom-btn { width: 32px; height: 32px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-surface); color: var(--text-secondary); font-size: 16px; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .15s; line-height: 1; }
+  .zoom-btn:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+  .zoom-btn.active { background: var(--accent-bg); color: var(--accent); }
+  #zoom-level { position: absolute; top: 14px; right: 52px; font-size: 11px; font-family: Consolas, monospace; color: var(--text-dim); background: var(--bg-surface); padding: 4px 8px; border-radius: 4px; border: 1px solid var(--border); z-index: 2; pointer-events: none; }
+  #canvas-hint { position: absolute; bottom: 36px; left: 50%; transform: translateX(-50%); font-size: 12px; color: var(--canvas-hint-text); background: var(--canvas-hint-bg); padding: 6px 14px; border-radius: 12px; pointer-events: none; white-space: nowrap; z-index: 1; }
 </style>

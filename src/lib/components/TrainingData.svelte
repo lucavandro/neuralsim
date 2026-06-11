@@ -51,21 +51,21 @@
 
 <style>
   .td-container { max-width: 720px; margin: 0 auto; display: flex; flex-direction: column; gap: 24px; }
-  .td-section { background: #16213e; border-radius: 12px; padding: 24px; }
-  .td-section h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: #8888aa; margin-bottom: 16px; }
+  .td-section { background: var(--bg-surface); border-radius: 12px; padding: 24px; }
+  .td-section h3 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 16px; }
 
   .td-table-wrap { overflow-x: auto; }
   .td-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-  .td-table th { background: #0f0f1a; color: #666688; padding: 10px 14px; text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
-  .td-table td { padding: 8px 14px; border-bottom: 1px solid #0f3460; color: #c0c0d0; font-family: Consolas, monospace; }
-  .td-table tr:hover td { background: rgba(79, 195, 247, 0.04); }
-  .label-yes { color: #81c784; font-weight: 600; }
-  .label-no { color: #e57373; font-weight: 600; }
+  .td-table th { background: var(--table-header-bg); color: var(--table-header-text); padding: 10px 14px; text-align: left; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; font-size: 11px; }
+  .td-table td { padding: 8px 14px; border-bottom: 1px solid var(--table-border); color: var(--table-text); font-family: Consolas, monospace; }
+  .td-table tr:hover td { background: var(--table-hover); }
+  .label-yes { color: var(--success); font-weight: 600; }
+  .label-no { color: var(--error); font-weight: 600; }
   .td-stats { display: flex; flex-direction: column; gap: 8px; }
-  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #0f3460; }
+  .stat-row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid var(--table-border); }
   .stat-row:last-child { border-bottom: none; }
-  .stat-label { font-size: 14px; color: #a0a0c0; }
-  .stat-val { font-size: 15px; font-weight: 700; font-family: Consolas, monospace; color: #e0e0ff; }
-  .stat-val.td-green { color: #81c784; }
-  .stat-val.td-red { color: #e57373; }
+  .stat-label { font-size: 14px; color: var(--text-secondary); }
+  .stat-val { font-size: 15px; font-weight: 700; font-family: Consolas, monospace; color: var(--text-primary); }
+  .stat-val.td-green { color: var(--success); }
+  .stat-val.td-red { color: var(--error); }
 </style>

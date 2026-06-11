@@ -187,18 +187,18 @@
 
 <style>
   .mt-container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 20px; }
-  .mt-header { display: flex; align-items: center; justify-content: space-between; background: #16213e; border-radius: 12px; padding: 16px 24px; flex-wrap: wrap; gap: 12px; }
+  .mt-header { display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); border-radius: 12px; padding: 16px 24px; flex-wrap: wrap; gap: 12px; }
   .mt-controls { display: flex; align-items: center; gap: 16px; }
   .mt-controls .btn { flex: 0 1 auto; padding: 8px 20px; }
-  .mt-speed { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #a0a0c0; }
-  .mt-speed input[type=range] { width: 120px; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: #0f3460; outline: none; cursor: pointer; }
-  .mt-info { font-size: 13px; color: #c0c0d0; font-family: Consolas, monospace; }
-  .mt-info span { font-weight: 700; color: #4fc3f7; }
+  .mt-speed { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
+  .mt-speed input[type=range] { width: 120px; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
+  .mt-info { font-size: 13px; color: var(--table-text); font-family: Consolas, monospace; }
+  .mt-info span { font-weight: 700; color: var(--accent); }
   .mt-matrices { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .mt-matrix-group { background: #16213e; border-radius: 12px; padding: 16px; }
-  .mt-matrix-group h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #8888aa; margin-bottom: 12px; }
+  .mt-matrix-group { background: var(--bg-surface); border-radius: 12px; padding: 16px; }
+  .mt-matrix-group h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
   .mt-matrix table { width: 100%; border-collapse: collapse; font-size: 12px; font-family: Consolas, monospace; }
-  .mt-matrix td { padding: 6px 10px; text-align: center; border: 1px solid #0f3460; color: #c0c0d0; min-width: 50px; transition: all .3s; }
-  .mt-matrix td.highlight { background: #4fc3f7; color: #0f0f1a; font-weight: 700; border-color: #4fc3f7; }
-  .mt-matrix td.neg-highlight { background: #e94560; color: #fff; font-weight: 700; border-color: #e94560; }
+  .mt-matrix td { padding: 6px 10px; text-align: center; border: 1px solid var(--border); color: var(--table-text); min-width: 50px; transition: all .3s; }
+  .mt-matrix td.highlight { background: var(--highlight-pos); color: var(--bg-body); font-weight: 700; border-color: var(--highlight-pos); }
+  .mt-matrix td.neg-highlight { background: var(--highlight-neg); color: #fff; font-weight: 700; border-color: var(--highlight-neg); }
 </style>

@@ -148,44 +148,44 @@
 </div>
 
 <style>
-  #control-panel { width: 300px; flex-shrink: 0; background: #16213e; border-left: 1px solid #0f3460; padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
-  .panel-section { background: #1a1a2e; border-radius: 10px; padding: 16px; }
-  .panel-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: #8888aa; margin-bottom: 12px; }
+  #control-panel { width: 300px; flex-shrink: 0; background: var(--bg-surface); border-left: 1px solid var(--border); padding: 20px; display: flex; flex-direction: column; gap: 16px; overflow-y: auto; }
+  .panel-section { background: var(--bg-elevated); border-radius: 10px; padding: 16px; }
+  .panel-section h3 { font-size: 12px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-muted); margin-bottom: 12px; }
   :global(.input-row) { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
   :global(.input-row:last-child) { margin-bottom: 0; }
-  :global(.input-row label) { font-size: 14px; color: #a0a0c0; min-width: 60px; }
-  :global(.input-row input[type=number]) { flex: 1; padding: 8px 10px; border: 1px solid #0f3460; border-radius: 6px; background: #0f0f1a; color: #e0e0e0; font-size: 14px; font-family: Consolas, monospace; outline: none; }
-  :global(.input-row input[type=number]:focus) { border-color: #4fc3f7; }
-  :global(.input-row .unit) { font-size: 13px; color: #666; min-width: 24px; }
-  :global(.input-row .norm) { font-size: 11px; color: #555; min-width: 40px; text-align: right; }
+  :global(.input-row label) { font-size: 14px; color: var(--text-secondary); min-width: 60px; }
+  :global(.input-row input[type=number]) { flex: 1; padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px; background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-family: Consolas, monospace; outline: none; }
+  :global(.input-row input[type=number]:focus) { border-color: var(--accent); }
+  :global(.input-row .unit) { font-size: 13px; color: var(--unit-text); min-width: 24px; }
+  :global(.input-row .norm) { font-size: 11px; color: var(--norm-text); min-width: 40px; text-align: right; }
   :global(.btn-row) { display: flex; gap: 8px; }
   :global(.btn) { flex: 1; padding: 10px 0; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all .2s; }
-  :global(.btn-play) { background: #e94560; color: #fff; }
-  :global(.btn-play:hover:not(:disabled)) { background: #ff6b81; transform: translateY(-1px); }
+  :global(.btn-play) { background: var(--danger); color: #fff; }
+  :global(.btn-play:hover:not(:disabled)) { background: var(--danger-hover); transform: translateY(-1px); }
   :global(.btn-play:disabled) { opacity: 0.4; cursor: not-allowed; }
-  :global(.btn-load) { background: #0f3460; color: #a0a0c0; }
-  :global(.btn-load:hover) { background: #1a4a7a; color: #fff; }
-  :global(.btn-train) { background: #6a1b9a; color: #fff; }
-  :global(.btn-train:hover:not(:disabled)) { background: #8e24aa; transform: translateY(-1px); }
+  :global(.btn-load) { background: var(--btn-load); color: var(--btn-load-text); }
+  :global(.btn-load:hover) { background: var(--btn-load-hover); color: var(--btn-load-hover-text); }
+  :global(.btn-train) { background: var(--btn-train); color: #fff; }
+  :global(.btn-train:hover:not(:disabled)) { background: var(--btn-train-hover); transform: translateY(-1px); }
   :global(.btn-train:disabled) { opacity: 0.4; cursor: not-allowed; }
-  :global(.btn-download) { background: #00695c; color: #fff; }
-  :global(.btn-download:hover) { background: #00897b; transform: translateY(-1px); }
+  :global(.btn-download) { background: var(--btn-download); color: #fff; }
+  :global(.btn-download:hover) { background: var(--btn-download-hover); transform: translateY(-1px); }
   :global(#result-box) { text-align: center; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: 600; transition: all .4s; }
-  :global(#result-box.waiting) { background: #0f0f1a; color: #555; }
-  :global(#result-box.yes) { background: #1b3a2d; color: #81c784; }
-  :global(#result-box.no) { background: #3a1b1b; color: #e57373; }
+  :global(#result-box.waiting) { background: var(--bg-input); color: var(--text-dim); }
+  :global(#result-box.yes) { background: var(--result-yes-bg); color: var(--success); }
+  :global(#result-box.no) { background: var(--result-no-bg); color: var(--error); }
   #weight-editor { display: none; }
   #weight-editor.visible { display: block; }
-  #weight-editor .conn-label { font-size: 12px; color: #8888aa; margin-bottom: 8px; }
+  #weight-editor .conn-label { font-size: 12px; color: var(--text-muted); margin-bottom: 8px; }
   #weight-editor .edit-row { display: flex; align-items: center; gap: 8px; }
-  #weight-editor input { flex: 1; padding: 8px 10px; border: 1px solid #e94560; border-radius: 6px; background: #0f0f1a; color: #e0e0e0; font-size: 14px; font-family: Consolas, monospace; outline: none; }
-  #weight-editor .save-btn { padding: 8px 16px; border: none; border-radius: 6px; background: #e94560; color: #fff; cursor: pointer; font-weight: 600; font-size: 13px; }
-  #weight-editor .save-btn:hover { background: #ff6b81; }
+  #weight-editor input { flex: 1; padding: 8px 10px; border: 1px solid var(--danger); border-radius: 6px; background: var(--bg-input); color: var(--text-primary); font-size: 14px; font-family: Consolas, monospace; outline: none; }
+  #weight-editor .save-btn { padding: 8px 16px; border: none; border-radius: 6px; background: var(--danger); color: #fff; cursor: pointer; font-weight: 600; font-size: 13px; }
+  #weight-editor .save-btn:hover { background: var(--danger-hover); }
   :global(#output-display) { text-align: center; }
-  :global(#output-display .value) { font-size: 28px; font-weight: 700; font-family: Consolas, monospace; color: #4fc3f7; }
-  :global(#output-display .label) { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 1px; }
+  :global(#output-display .value) { font-size: 28px; font-weight: 700; font-family: Consolas, monospace; color: var(--accent); }
+  :global(#output-display .label) { font-size: 11px; color: var(--unit-text); text-transform: uppercase; letter-spacing: 1px; }
   :global(.speed-row) { display: flex; align-items: center; gap: 10px; }
-  :global(.speed-row label) { font-size: 11px; color: #666; text-transform: uppercase; letter-spacing: 0.5px; }
-  :global(.speed-row input[type=range]) { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: #0f3460; outline: none; cursor: pointer; }
-  :global(.speed-val) { font-size: 14px; font-weight: 600; font-family: Consolas, monospace; color: #4fc3f7; min-width: 36px; text-align: right; }
+  :global(.speed-row label) { font-size: 11px; color: var(--unit-text); text-transform: uppercase; letter-spacing: 0.5px; }
+  :global(.speed-row input[type=range]) { flex: 1; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
+  :global(.speed-val) { font-size: 14px; font-weight: 600; font-family: Consolas, monospace; color: var(--accent); min-width: 36px; text-align: right; }
 </style>
