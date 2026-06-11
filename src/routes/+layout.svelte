@@ -1,6 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   import { page } from '$app/stores';
+  import { base } from '$app/paths';
   import { anim, initWeights, fwd } from '$lib/network.svelte.js';
   import { loadWeights } from '$lib/persistence.js';
   import favicon from '$lib/assets/favicon.svg';
@@ -9,7 +10,7 @@
   let { children } = $props();
 
   $effect(() => {
-    if ($page.url.pathname !== '/' && anim.running) anim.running = false;
+    if ($page.url.pathname !== base && $page.url.pathname !== base + '/' && anim.running) anim.running = false;
   });
 
   onMount(() => {

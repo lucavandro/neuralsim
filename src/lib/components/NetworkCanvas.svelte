@@ -17,6 +17,7 @@
   let panStartY = $state(0);
   let panStartPanX = $state(0);
   let panStartPanY = $state(0);
+  let pannedDist = $state(0);
   const ZOOM_MIN = 0.3;
   const ZOOM_MAX = 5;
 
@@ -31,11 +32,6 @@
   }
   function weightColor(w) { return w > 0 ? { r: 66, g: 165, b: 245 } : { r: 239, g: 68, b: 68 }; }
   function rgba(r, g, b, a) { return "rgba(" + r + "," + g + "," + b + "," + a + ")"; }
-
-  function getCSSCustomProp(name, fallback) {
-    if (typeof document === 'undefined') return fallback;
-    return getComputedStyle(document.documentElement).getPropertyValue(name).trim() || fallback;
-  }
 
   function canvasColors() {
     var isLight = document.documentElement.dataset.theme === 'light';
@@ -232,7 +228,7 @@
   }
 
   function onClick(e) {
-    if (anim.running) return;
+    if (anim.running || pannedDist > 5) return;
     var rect = canvas.getBoundingClientRect();
     var p = screenToCanvas(e.clientX - rect.x, e.clientY - rect.y);
     var mx = p.x, my = p.y;
@@ -273,7 +269,6 @@
   }
 
   function onWheel(e) {
-    e.preventDefault();
     var rect = canvas.getBoundingClientRect();
     var mx = e.clientX - rect.x, my = e.clientY - rect.y;
     var oldZoom = zoom;
@@ -292,12 +287,18 @@
     panStartY = e.clientY;
     panStartPanX = panX;
     panStartPanY = panY;
+    pannedDist = 0;
   }
 
   function onMouseMove(e) {
     if (isPanning) {
       panX = panStartPanX + (e.clientX - panStartX) / zoom;
       panY = panStartPanY + (e.clientY - panStartY) / zoom;
+      pannedDist += Math.abs(e.clientX - panStartX) + Math.abs(e.clientY - panStartY);
+      panStartX = e.clientX;
+      panStartY = e.clientY;
+      panStartPanX = panX;
+      panStartPanY = panY;
       draw();
     }
   }
@@ -307,6 +308,7 @@
   }
 
   function zoomIn() {
+    if (!ctx) return;
     var oldZoom = zoom;
     var newZoom = Math.min(ZOOM_MAX, zoom * 1.3);
     panX = (W / 2) / newZoom - (W / 2) / oldZoom + panX;
@@ -316,6 +318,7 @@
   }
 
   function zoomOut() {
+    if (!ctx) return;
     var oldZoom = zoom;
     var newZoom = Math.max(ZOOM_MIN, zoom / 1.3);
     panX = (W / 2) / newZoom - (W / 2) / oldZoom + panX;
@@ -325,6 +328,7 @@
   }
 
   function resetZoom() {
+    if (!ctx) return;
     zoom = 1;
     panX = 0;
     panY = 0;
@@ -361,7 +365,7 @@
   });
 
   $effect(() => {
-    $currentTheme; zoom; panX; panY;
+    $currentTheme;
     if (ctx && !anim.running) draw();
   });
 
