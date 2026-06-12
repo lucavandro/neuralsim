@@ -1,5 +1,5 @@
 <script>
-  import { net, sigmoid, N_HID } from '$lib/network.svelte.js';
+  import { net, sigmoid, randomizeWeights, N_HID } from '$lib/network.svelte.js';
   import { getTrainingData } from '$lib/data/training-data.js';
 
   const L_IN_ = 0, L_HID_ = 1, L_OUT_ = 2;
@@ -100,6 +100,12 @@
     timeoutId = setTimeout(loop, delay);
   }
 
+  function handleResetNetwork() {
+    if (running) { running = false; if (timeoutId) { clearTimeout(timeoutId); timeoutId = 0; } }
+    randomizeWeights();
+    reset();
+  }
+
   function toggle() {
     if (running) {
       running = false;
@@ -116,6 +122,7 @@
   <div class="mt-header">
     <div class="mt-controls">
       <button class="btn btn-play" onclick={toggle}>{running ? "\u23F8 Pause" : "\u25B6 Start"}</button>
+      <button class="btn btn-reset" onclick={handleResetNetwork}>&#8634; Reset rete</button>
       <div class="mt-speed">
         <label for="mt-delay-slider">Ritardo: {delay}ms</label>
         <input id="mt-delay-slider" type="range" min="50" max="2000" step="50" bind:value={delay}>
@@ -190,6 +197,8 @@
   .mt-header { display: flex; align-items: center; justify-content: space-between; background: var(--bg-surface); border-radius: 12px; padding: 16px 24px; flex-wrap: wrap; gap: 12px; }
   .mt-controls { display: flex; align-items: center; gap: 16px; }
   .mt-controls .btn { flex: 0 1 auto; padding: 8px 20px; }
+  .mt-controls .btn-reset { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+  .mt-controls .btn-reset:hover { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
   .mt-speed { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--text-secondary); }
   .mt-speed input[type=range] { width: 120px; -webkit-appearance: none; appearance: none; height: 4px; border-radius: 2px; background: var(--border); outline: none; cursor: pointer; }
   .mt-info { font-size: 13px; color: var(--table-text); font-family: Consolas, monospace; }

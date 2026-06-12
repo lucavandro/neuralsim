@@ -1,5 +1,5 @@
 <script>
-  import { net, anim, speedConfig, selection, fwd, LABELS, L_IN, L_HID, L_OUT, applyLoadedData } from '$lib/network.svelte.js';
+  import { net, anim, speedConfig, selection, fwd, randomizeWeights, LABELS, L_IN, L_HID, L_OUT, applyLoadedData } from '$lib/network.svelte.js';
   import { train } from '$lib/training.js';
   import { saveWeights, downloadWeights } from '$lib/persistence.js';
 
@@ -42,6 +42,15 @@
       fwd(h, w);
       anim.phase = 0;
     }, 50);
+  }
+
+  function handleReset() {
+    if (anim.running) anim.running = false;
+    randomizeWeights();
+    saveWeights();
+    var h = +hInput || 175, w = +wInput || 70;
+    fwd(h, w);
+    anim.phase = 0;
   }
 
   function handleLoad() { document.getElementById("file-input").click(); }
@@ -112,6 +121,9 @@
       <button class="btn btn-train" id="btn-train" onclick={handleTrain}>&#9889; Train</button>
       <button class="btn btn-download" onclick={downloadWeights}>&#11015; Download</button>
     </div>
+    <div class="btn-row" style="margin-top:8px">
+      <button class="btn btn-reset" onclick={handleReset}>&#8634; Reset rete</button>
+    </div>
     <input type="file" id="file-input" accept=".json" style="display:none" onchange={handleFileChange}>
   </div>
 
@@ -170,6 +182,8 @@
   :global(.btn-train:disabled) { opacity: 0.4; cursor: not-allowed; }
   :global(.btn-download) { background: var(--btn-download); color: #fff; }
   :global(.btn-download:hover) { background: var(--btn-download-hover); transform: translateY(-1px); }
+  :global(.btn-reset) { background: var(--bg-input); color: var(--text-secondary); border: 1px solid var(--border); }
+  :global(.btn-reset:hover) { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); transform: translateY(-1px); }
   :global(#result-box) { text-align: center; padding: 16px; border-radius: 8px; font-size: 18px; font-weight: 600; transition: all .4s; }
   :global(#result-box.waiting) { background: var(--bg-input); color: var(--text-dim); }
   :global(#result-box.yes) { background: var(--result-yes-bg); color: var(--success); }

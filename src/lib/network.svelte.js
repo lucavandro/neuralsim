@@ -38,6 +38,19 @@ export function initWeights() {
   net.biases = { hidden: [b1[0], b1[1], b1[2]], output: b2 };
 }
 
+export function randomizeWeights() {
+  net.weights = [];
+  for (var i = 0; i < 2; i++) {
+    for (var j = 0; j < N_HID_; j++) {
+      net.weights.push({ from: [L_IN_, i], to: [L_HID_, j], w: Math.random() * 2 - 1 });
+    }
+  }
+  for (var j = 0; j < N_HID_; j++) {
+    net.weights.push({ from: [L_HID_, j], to: [L_OUT_, 0], w: Math.random() * 2 - 1 });
+  }
+  net.biases = { hidden: [Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5], output: Math.random() - 0.5 };
+}
+
 export function fwd(h_cm, w_kg) {
   var hn = Math.max(0, Math.min(1, h_cm / 200));
   var wn = Math.max(0, Math.min(1, w_kg / 150));
